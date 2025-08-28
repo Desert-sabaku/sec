@@ -10,9 +10,10 @@ def build_substitution_table(*columns)
   end
 end
 
-def transform_column(column, table)
-  column.map { |ip| table[ip] }
-end
+# @param column [Array<String>] The column to transform
+# @param table [Hash<String, String>] The substitution table
+# @return [Array<String>] The transformed column
+def transform_column(column, table) = column.map { |ip| table[ip] }
 
 def main(input_file, output_file)
   data = CSV.read(input_file, headers: true)
@@ -28,4 +29,4 @@ def main(input_file, output_file)
   end
 end
 
-main(INPUT_FILE, OUTPUT_FILE)
+main(INPUT_FILE, OUTPUT_FILE) if __FILE__ == $PROGRAM_NAME
