@@ -1,34 +1,31 @@
 require "csv"
 
-FILE = "src/fg.csv"
-DATA = CSV.read(FILE, headers: true)
+INPUT_FILE  = "src/fg.csv".freeze
+OUTPUT_FILE = "src/fg_out.csv".freeze
 
-# 一番最後の行を削除したものを取得
-i = 0
-DSTIP = DATA["dstip"][...-1]
-SRCPIP = DATA["srcip"][...-1]
-SUBSTITUTION_TABLE = [*DSTIP, *SRCPIP].uniq.sort.each_with_object({}) do |key, h|
-  h[key] = i.to_s.rjust(10, "0")
-  i += 1
-end
-
-DSTIP.each do |item|
-  item.gsub!(item, SUBSTITUTION_TABLE[item])
-  item.gsub!(/^/, "IP")
-end
-
-SRCPIP.each do |item|
-  item.gsub!(item, SUBSTITUTION_TABLE[item])
-  item.gsub!(/^/, "IP")
-end
-
-pp DSTIP, SRCPIP
-# 加工後のdstip, srcip列で元のCSVファイルを上書き保存
-DATA["dstip"][...-1] = DSTIP
-DATA["srcip"][...-1] = SRCPIP
-CSV.open("src/fg_out.csv", "w") do |csv|
-  csv << DATA.headers
-  DATA.each do |row|
-    csv << row
+def build_substitution_table(*columns)
+  unique_ips = columns.flatten.uniq.sort
+  unique_ips.each_with_index.to_h do |ip, index|
+    [ip, format("IP%010d", index)]
   end
 end
+
+def transform_column(column, table)
+  column.map { |ip| table[ip] }
+end
+
+def main(input_file, output_file)
+  data = CSV.read(input_file, headers: true)
+
+  substitution_table = build_substitution_table(data["dstip"][0...-1], data["srcip"][0...-1])
+
+  data["dstip"] = transform_column(data["dstip"], substitution_table)
+  data["srcip"] = transform_column(data["srcip"], substitution_table)
+
+  CSV.open(output_file, "w") do |csv|
+    csv << data.headers
+    data.each { |row| csv << row }
+  end
+end
+
+main(INPUT_FILE, OUTPUT_FILE)
