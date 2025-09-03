@@ -3,6 +3,9 @@ require "csv"
 INPUT_FILE  = "src/fg.csv".freeze
 OUTPUT_FILE = "src/fg_out.csv".freeze
 
+# Builds a substitution table mapping original IPs to their hidden counterparts.
+# @param columns [Array<Array<String>>] Arrays of IP addresses from different columns
+# @return [Hash<String, String>] The substitution table
 def build_substitution_table(*columns)
   unique_ips = columns.flatten.uniq.sort
   unique_ips.each_with_index.to_h do |ip, index|
